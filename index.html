@@ -479,7 +479,7 @@
             // Update displays
             if (panelName === 'waitlist') {
                 updateWaitlistDisplay();
-                updateWaitlistForms();
+                updateWaitlistForms(); // Ensures form visibility is correct every time the panel is opened
             } else if (panelName === 'admin') {
                 updateAdminDisplay();
             }
@@ -511,7 +511,7 @@
 
         async function addToWaitlist() {
             const name = document.getElementById('customer-name').value.trim();
-            const address = document.getElementById('customer-address').value.trim(); // NEW FIELD
+            const address = document.getElementById('customer-address').value.trim(); 
             const phone = document.getElementById('customer-phone').value.trim();
             const messageDiv = document.getElementById('waitlist-message');
 
@@ -521,7 +521,7 @@
                 return;
             }
 
-            if (!name || !address || !phone) { // NEW VALIDATION
+            if (!name || !address || !phone) { 
                 showMessage(messageDiv, 'Please enter your name, address, and phone number.', 'error');
                 return;
             }
@@ -529,7 +529,7 @@
             // 2. Add to Supabase (including address)
             const { data, error: insertError } = await supabase
                 .from(WAITLIST_TABLE)
-                .insert([{ name: name, phone: phone, address: address }]) // Pass address
+                .insert([{ name: name, phone: phone, address: address }]) 
                 .select('id') 
                 .single();
             
@@ -547,7 +547,7 @@
             showMessage(messageDiv, `SUCCESS! You have been added to the list and are spot #${length}.`, 'success');
             
             document.getElementById('customer-name').value = '';
-            document.getElementById('customer-address').value = ''; // Clear address input
+            document.getElementById('customer-address').value = ''; 
             document.getElementById('customer-phone').value = '';
 
             updateWaitlistDisplay();
@@ -603,8 +603,10 @@
                 showMessage(messageDiv, `Deletion failed. The entry may have already been removed by an administrator.`, 'error');
             }
             
+            // --- FIX APPLIED HERE: Ensure UI state is updated immediately ---
             updateWaitlistDisplay();
-            updateWaitlistForms();
+            updateWaitlistForms(); 
+            // ---------------------------------------------------------------
         }
 
         async function deleteAdminEntry(id, entryName) {
