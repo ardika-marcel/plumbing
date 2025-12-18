@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickFix Plumbing Services</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* --- CSS STYLES (Kept identical for consistency) --- */
         * {
             margin: 0;
             padding: 0;
@@ -32,7 +33,8 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             justify-content: center;
-            gap: 15px;
+            /* UPDATED: Increased gap to accommodate more buttons */
+            gap: 15px; 
             flex-wrap: wrap;
         }
 
@@ -40,7 +42,7 @@
             background: #667eea;
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 12px 25px; /* Slightly reduced padding */
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
@@ -86,11 +88,11 @@
         }
 
         h3 {
-            color: #667eea;
-            margin-top: 20px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
+             color: #667eea;
+             margin-top: 20px;
+             margin-bottom: 15px;
+             padding-bottom: 10px;
+             border-bottom: 1px solid #ddd;
         }
 
         .hero {
@@ -105,6 +107,7 @@
             margin-bottom: 20px;
         }
 
+        /* NEW: Style for Social Media Links */
         .social-links {
             margin-top: 20px;
         }
@@ -118,6 +121,8 @@
         .social-links a:hover {
             color: #764ba2;
         }
+        /* END NEW: Style for Social Media Links */
+
 
         .image-gallery {
             display: grid;
@@ -193,7 +198,7 @@
         .btn-delete {
             background: #e74c3c;
             padding: 12px 30px;
-            width: 100%;
+            width: 100%; 
         }
 
         .btn-delete-admin {
@@ -203,8 +208,7 @@
             width: auto;
         }
 
-        .btn-delete:hover,
-        .btn-delete-admin:hover {
+        .btn-delete:hover, .btn-delete-admin:hover {
             background: #c0392b;
         }
 
@@ -221,7 +225,7 @@
             align-items: center;
             border-left: 4px solid #667eea;
         }
-
+        
         .waitlist-item-position {
             font-size: 12px;
             font-weight: 700;
@@ -300,6 +304,7 @@
             margin-bottom: 10px;
         }
 
+
         #delete-form-group {
             margin-top: 30px;
             padding: 20px;
@@ -307,7 +312,7 @@
             border-radius: 8px;
             background-color: #fef0f0;
         }
-
+        
         #change-pin-group {
             margin-top: 40px;
             padding: 20px;
@@ -315,6 +320,8 @@
             border-radius: 8px;
             background-color: #f0f4ff;
         }
+        
+        /* DELETED: Styles for the About Us panel content */
     </style>
 </head>
 <body>
@@ -333,26 +340,33 @@
                 <p>Your trusted local plumber for all residential and commercial plumbing needs. With over 15 years of experience, we provide fast, reliable, and affordable plumbing solutions.</p>
                 <p>Available 24/7 for emergency services. No job is too big or too small!</p>
                 <p><strong>Contact us:</strong> (555) 123-4567 | info@quickfixplumbing.com</p>
+                
                 <div class="social-links">
-                    <a href="https://facebook.com/quickfixplumbing" target="_blank" aria-label="Find us on Facebook">📘 Facebook</a>
-                    <a href="https://twitter.com/quickfixplumb" target="_blank" aria-label="Follow us on X (Twitter)">🐦 X (Twitter)</a>
-                    <a href="https://www.instagram.com/plumber.stagram?igsh=MWlwbGFjenBwemY1bg==" target="_blank" aria-label="See us on Instagram">📸 Instagram</a>
+                    <a href="https://facebook.com/quickfixplumbing" target="_blank" aria-label="Find us on Facebook">
+                        📘 Facebook
+                    </a>
+                    <a href="https://twitter.com/quickfixplumb" target="_blank" aria-label="Follow us on X (Twitter)">
+                        🐦 X (Twitter)
+                    </a>
+                    <a href="https://www.instagram.com/plumber.stagram?igsh=MWlwbGFjenBwemY1bg==" target="_blank" aria-label="See us on Instagram">
+                        📸 Instagram
+                    </a>
                 </div>
             </div>
 
             <h2>Our Services</h2>
             <div class="image-gallery">
                 <div class="image-box">
-                    <img src="Boost.jpg" alt="Emergency Repairs" />
-                    <p>🚰 Emergency Repairs<br />Fast response to leaks and bursts</p>
+                    <img src="Boost.jpg" alt="Emergency Repairs">
+                    <p>🚰 Emergency Repairs<br>Fast response to leaks and bursts</p>
                 </div>
                 <div class="image-box">
-                    <img src="Work.jpg" alt="Installation Services" />
-                    <p>🔨 Installation Services<br />New fixtures and appliances</p>
+                    <img src="Work.jpg" alt="Installation Services">
+                    <p>🔨 Installation Services<br>New fixtures and appliances</p>
                 </div>
                 <div class="image-box">
-                    <img src="Care.jpg" alt="Maintenance" />
-                    <p>🛠️ Maintenance<br />Preventive care and inspections</p>
+                    <img src="Care.jpg" alt="Maintenance">
+                    <p>🛠️ Maintenance<br>Preventive care and inspections</p>
                 </div>
             </div>
         </div>
@@ -366,11 +380,18 @@
                 <p><strong>Email:</strong> info@quickfixplumbing.com</p>
                 <p><strong>Business Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM (24/7 for emergencies)</p>
                 <p style="margin-top: 20px;">Or, visit our <a href="#waitlist" onclick="showPanel('waitlist')">Waiting List page</a> to book a spot!</p>
+                
                 <h3 style="margin-top: 25px;">Follow Us</h3>
                 <div class="social-links" style="text-align: left;">
-                    <a href="https://facebook.com/quickfixplumbing" target="_blank" aria-label="Find us on Facebook" style="font-size: 20px;">📘 @quickfixplumbing</a><br />
-                    <a href="https://twitter.com/quickfixplumb" target="_blank" aria-label="Follow us on X (Twitter)" style="font-size: 20px;">🐦 @quickfixplumb</a><br />
-                    <a href="https://www.instagram.com/plumber.stagram?igsh=MWlwbGFjenBwemY1bg==" target="_blank" aria-label="See us on Instagram" style="font-size: 20px;">📸 @quickfixplumbing</a>
+                    <a href="https://facebook.com/quickfixplumbing" target="_blank" aria-label="Find us on Facebook" style="font-size: 20px;">
+                        📘 @quickfixplumbing
+                    </a><br>
+                    <a href="https://twitter.com/quickfixplumb" target="_blank" aria-label="Follow us on X (Twitter)" style="font-size: 20px;">
+                        🐦 @quickfixplumb
+                    </a><br>
+                    <a href="https://www.instagram.com/plumber.stagram?igsh=MWlwbGFjenBwemY1bg==" target="_blank" aria-label="See us on Instagram" style="font-size: 20px;">
+                        📸 @quickfixplumbing
+                    </a>
                 </div>
             </div>
         </div>
@@ -401,22 +422,26 @@
                 <h3>Add New Reservation</h3>
                 <div class="form-group">
                     <label for="customer-name">Your Name:</label>
-                    <input type="text" id="customer-name" placeholder="Enter your full name" />
+                    <input type="text" id="customer-name" placeholder="Enter your full name">
                 </div>
+                
                 <div class="form-group">
                     <label for="customer-address">Service Address:</label>
-                    <input type="text" id="customer-address" placeholder="Enter your service address (required)" />
+                    <input type="text" id="customer-address" placeholder="Enter your service address (required)">
                 </div>
+
                 <div class="form-group">
                     <label for="customer-phone">Phone Number:</label>
-                    <input type="tel" id="customer-phone" placeholder="Enter your phone number" />
+                    <input type="tel" id="customer-phone" placeholder="Enter your phone number">
                 </div>
+
                 <button class="btn" id="add-btn" onclick="addToWaitlist()">Add to List</button>
             </div>
             
             <div id="delete-form-group" style="display: none;">
                 <h3>Delete Your Active Reservation</h3>
                 <p style="text-align: center; margin-bottom: 15px; color: #721c24;">Click the button below to instantly remove the reservation you made from this device.</p>
+                
                 <button class="btn btn-delete" id="delete-btn" onclick="attemptDeleteFromWaitlist()">Delete My Entry</button>
             </div>
 
@@ -428,12 +453,13 @@
 
         <div class="panel" id="admin">
             <h1>🔐 Admin Panel</h1>
+
             <div class="admin-locked" id="admin-locked">
                 <div class="pin-input">
                     <h2>Enter PIN to Access</h2>
                     <div id="admin-message"></div>
                     <div class="form-group">
-                        <input type="password" id="admin-pin" placeholder="Enter PIN" />
+                        <input type="password" id="admin-pin" placeholder="Enter PIN">
                     </div>
                     <button class="btn" onclick="checkPin()">Unlock</button>
                 </div>
@@ -452,38 +478,43 @@
                 <div id="change-pin-group">
                     <h2>Change Admin PIN</h2>
                     <div id="pin-change-message"></div>
+
                     <div class="form-group">
                         <label for="old-pin">Current PIN:</label>
-                        <input type="password" id="old-pin" placeholder="Enter current PIN" />
+                        <input type="password" id="old-pin" placeholder="Enter current PIN">
                     </div>
+                    
                     <div class="form-group">
                         <label for="new-pin">New PIN:</label>
-                        <input type="password" id="new-pin" placeholder="Enter new PIN" />
+                        <input type="password" id="new-pin" placeholder="Enter new PIN">
                     </div>
+
                     <button class="btn" onclick="changeAdminPin()">Update PIN</button>
                 </div>
+                
             </div>
         </div>
     </div>
 
     <script>
-        // --- SUPABASE CONFIGURATION (NO TRAILING SPACES!) ---
+        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://dcrbyuilbjupdgeecplk.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_52rT6qyN0PNVo4TVz6enNw_yXClXDkF';
-
-        // Initialize Supabase client with trimmed values for safety
-        const supabase = window.supabase.createClient(SUPABASE_URL.trim(), SUPABASE_ANON_KEY.trim());
-
+        
+        // Initialize the Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const WAITLIST_TABLE = 'waitlist';
-        const ADMIN_PIN_TABLE = 'admin_pin';
-        const ADMIN_PIN_ID = 1;
-        const LOCAL_STORAGE_KEY = 'quickfix_reservation_id';
-        const DEFAULT_ADMIN_PIN = 'COOLUP';
+        const ADMIN_PIN_TABLE = 'admin_pin'; 
+        const ADMIN_PIN_ID = 1; 
+        const LOCAL_STORAGE_KEY = 'quickfix_reservation_id'; 
+        const DEFAULT_ADMIN_PIN = 'COOLUP'; 
 
+        // Store admin state
         let isAdminLoggedIn = false;
 
-        // --- PIN FUNCTIONS ---
+        // --- PIN FUNCTIONS (Database-backed) ---
         async function getAdminPin() {
+            // Always retrieve the PIN from the database
             const { data, error } = await supabase
                 .from(ADMIN_PIN_TABLE)
                 .select('pin_value')
@@ -492,20 +523,23 @@
 
             if (error || !data) {
                 console.error("Failed to fetch Admin PIN from DB, using default.", error);
+                // Fall back to hardcoded default if database is inaccessible or table is empty
                 return DEFAULT_ADMIN_PIN;
             }
             return data.pin_value;
         }
 
         async function setAdminPin(newPin) {
+            // Update the PIN value in the database
             const { error } = await supabase
                 .from(ADMIN_PIN_TABLE)
                 .update({ pin_value: newPin })
                 .eq('id', ADMIN_PIN_ID);
-            return !error;
+            
+            return !error; // Returns true if successful, false if there was an error
         }
 
-        // --- LOCAL STORAGE HELPER ---
+        // --- LOCAL STORAGE FUNCTIONS (Waitlist Only) ---
         function getReservationId() {
             return localStorage.getItem(LOCAL_STORAGE_KEY);
         }
@@ -518,14 +552,19 @@
             localStorage.removeItem(LOCAL_STORAGE_KEY);
         }
 
-        // --- PANEL & UI FUNCTIONS ---
+        // Initialize display on load
+        document.addEventListener('DOMContentLoaded', updateWaitlistDisplay);
+
         function showPanel(panelName) {
+            // Hide all panels
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
 
+            // Show selected panel
             document.getElementById(panelName).classList.add('active');
             document.getElementById('nav-' + panelName).classList.add('active');
 
+            // Update displays
             if (panelName === 'waitlist') {
                 updateWaitlistDisplay();
                 updateWaitlistForms();
@@ -534,6 +573,10 @@
             }
         }
 
+        /**
+         * Toggles visibility between the Add form and the Delete form based on 
+         * whether a reservation ID is present in local storage.
+         */
         function updateWaitlistForms() {
             const reservationId = getReservationId();
             const addForm = document.getElementById('add-form-group');
@@ -541,51 +584,58 @@
             const messageDiv = document.getElementById('waitlist-message');
 
             if (reservationId) {
+                // Reservation exists in local storage: block addition, show deletion form
                 addForm.style.display = 'none';
                 deleteForm.style.display = 'block';
                 showMessage(messageDiv, 'You have an active reservation associated with this device. Click "Delete My Entry" to remove it.', 'error', 7000);
             } else {
+                // No reservation found: allow adding, hide deletion form
                 addForm.style.display = 'block';
                 deleteForm.style.display = 'none';
-                messageDiv.innerHTML = '';
+                showMessage(messageDiv, '', 'error'); // Clear potential error message
             }
         }
 
+
         async function addToWaitlist() {
             const name = document.getElementById('customer-name').value.trim();
-            const address = document.getElementById('customer-address').value.trim();
+            const address = document.getElementById('customer-address').value.trim(); // NEW FIELD
             const phone = document.getElementById('customer-phone').value.trim();
             const messageDiv = document.getElementById('waitlist-message');
 
+            // 1. PRIMARY CHECK: Is there a reservation ID already stored locally?
             if (getReservationId()) {
                 showMessage(messageDiv, 'You already have an active reservation. Please use the deletion button below to remove it before adding a new one.', 'error', 7000);
                 return;
             }
 
-            if (!name || !address || !phone) {
+            if (!name || !address || !phone) { // NEW VALIDATION
                 showMessage(messageDiv, 'Please enter your name, address, and phone number.', 'error');
                 return;
             }
 
+            // 2. Add to Supabase (including address)
             const { data, error: insertError } = await supabase
                 .from(WAITLIST_TABLE)
-                .insert([{ name, phone, address }])
-                .select('id')
+                .insert([{ name: name, phone: phone, address: address }]) // Pass address
+                .select('id') 
                 .single();
-
+            
             if (insertError) {
                 console.error('Insert Error:', insertError);
                 showMessage(messageDiv, 'Failed to add to the waiting list: ' + insertError.message, 'error');
                 return;
             }
 
+            // 3. Store the new reservation ID locally and update UI
             const newId = data.id;
             setReservationId(newId);
+            
             const length = await getWaitlistLength();
             showMessage(messageDiv, `SUCCESS! You have been added to the list and are spot #${length}.`, 'success');
             
             document.getElementById('customer-name').value = '';
-            document.getElementById('customer-address').value = '';
+            document.getElementById('customer-address').value = ''; // Clear address input
             document.getElementById('customer-phone').value = '';
 
             updateWaitlistDisplay();
@@ -594,13 +644,14 @@
 
         async function attemptDeleteFromWaitlist() {
             const messageDiv = document.getElementById('waitlist-message');
-            const reservationId = getReservationId();
+            const reservationId = getReservationId(); 
 
             if (!reservationId) {
-                showMessage(messageDiv, 'No active reservation found on this device to delete.', 'error');
-                return;
+                 showMessage(messageDiv, 'No active reservation found on this device to delete.', 'error');
+                 return;
             }
 
+            // 1. Fetch the user's name (for the success message) before deleting
             const { data: entryData, error: fetchError } = await supabase
                 .from(WAITLIST_TABLE)
                 .select('name')
@@ -608,19 +659,22 @@
                 .limit(1);
 
             if (fetchError || entryData.length === 0) {
-                clearReservationId();
-                showMessage(messageDiv, 'Your reservation was not found on the list (it may have been removed by an admin). Local tracking cleared. You may now add a new entry.', 'success');
-                updateWaitlistForms();
-                updateWaitlistDisplay();
-                return;
+                 // The ID exists locally but not in the DB (admin may have deleted it).
+                 clearReservationId();
+                 showMessage(messageDiv, 'Your reservation was not found on the list (it may have been removed by an admin). Local tracking cleared. You may now add a new entry.', 'success');
+                 updateWaitlistForms();
+                 updateWaitlistDisplay();
+                 return;
             }
 
             const entryName = entryData[0].name;
 
-            const { error: deleteError } = await supabase
+            // 2. Perform the deletion using the unique ID
+            const { error: deleteError, count } = await supabase
                 .from(WAITLIST_TABLE)
                 .delete()
-                .eq('id', reservationId);
+                .eq('id', reservationId)
+                .select('*', { count: 'exact' });
 
             if (deleteError) {
                 console.error('Delete Error:', deleteError);
@@ -628,8 +682,15 @@
                 return;
             }
 
-            clearReservationId();
-            showMessage(messageDiv, `${entryName}'s reservation has been successfully removed. You can now add a new entry.`, 'success');
+            if (count > 0) {
+                // 3. Clear local storage after successful deletion
+                clearReservationId();
+                
+                showMessage(messageDiv, `${entryName}'s reservation has been successfully removed. You can now add a new entry.`, 'success');
+            } else {
+                showMessage(messageDiv, `Deletion failed. The entry may have already been removed by an administrator.`, 'error');
+            }
+            
             updateWaitlistDisplay();
             updateWaitlistForms();
         }
@@ -637,10 +698,12 @@
         async function deleteAdminEntry(id, entryName) {
             const messageDiv = document.getElementById('admin-message');
 
-            const { error: deleteError } = await supabase
+            // Admin deletion uses the ID.
+            const { error: deleteError, count } = await supabase
                 .from(WAITLIST_TABLE)
                 .delete()
-                .eq('id', id);
+                .eq('id', id)
+                .select('*', { count: 'exact' });
 
             if (deleteError) {
                 console.error('Delete Error:', deleteError);
@@ -648,12 +711,19 @@
                 return;
             }
 
-            if (getReservationId() == id) {
-                clearReservationId();
-                updateWaitlistForms();
-            }
+            if (count > 0) {
+                 // If the admin deleted the reservation associated with the user's browser, clear local storage
+                if (getReservationId() == id) {
+                    clearReservationId();
+                    // Update user's forms if they are on the waitlist page
+                    updateWaitlistForms(); 
+                }
 
-            showMessage(messageDiv, `${entryName} (ID: ${id}) has been removed by Admin.`, 'success');
+                showMessage(messageDiv, `${entryName} (ID: ${id}) has been removed by Admin.`, 'success');
+            } else {
+                showMessage(messageDiv, `Admin deletion failed. Entry may not exist.`, 'error');
+            }
+           
             updateWaitlistDisplay();
             updateAdminWaitlistDisplay();
         }
@@ -662,13 +732,15 @@
             const { count, error } = await supabase
                 .from(WAITLIST_TABLE)
                 .select('*', { count: 'exact', head: true });
-            return count || 0;
+
+            return count;
         }
 
         async function updateWaitlistDisplay() {
             const display = document.getElementById('waitlist-display');
             display.innerHTML = '<div class="empty-list">Loading waitlist...</div>';
-
+            
+            // Fetch data, ordered by created_at (first in, first out)
             const { data: waitlist, error } = await supabase
                 .from(WAITLIST_TABLE)
                 .select('*')
@@ -679,7 +751,7 @@
                 display.innerHTML = '<div class="empty-list message error">Error fetching waitlist: ' + error.message + '</div>';
                 return;
             }
-
+            
             if (waitlist.length === 0) {
                 display.innerHTML = '<div class="empty-list">No one is currently on the waiting list.</div>';
                 return;
@@ -689,9 +761,14 @@
             const currentReservationId = getReservationId();
 
             waitlist.forEach((entry, index) => {
+                // Obfuscating the display for privacy
                 const obfuscatedName = entry.name.length > 2 ? entry.name.charAt(0) + '***' + entry.name.slice(-1) : entry.name;
                 const isMyReservation = currentReservationId && currentReservationId == entry.id;
+                
+                // Obfuscate phone number for all public viewers
                 const phoneDisplay = entry.phone.length > 4 ? `📞 ***-***-${entry.phone.slice(-4)}` : entry.phone;
+                
+                // Highlight the user's spot if they have one active
                 const highlightStyle = isMyReservation ? 'border-left: 4px solid #e74c3c; background: #ffebeb;' : '';
                 const mySpotText = isMyReservation ? ' (YOUR SPOT)' : '';
 
@@ -726,7 +803,8 @@
         async function updateAdminWaitlistDisplay() {
             const display = document.getElementById('admin-waitlist-display');
             display.innerHTML = '<div class="empty-list">Loading admin list...</div>';
-
+            
+            // Fetch data, now including the address field
             const { data: waitlist, error } = await supabase
                 .from(WAITLIST_TABLE)
                 .select('*')
@@ -737,7 +815,7 @@
                 display.innerHTML = '<div class="empty-list message error">Error fetching admin waitlist: ' + error.message + '</div>';
                 return;
             }
-
+            
             if (waitlist.length === 0) {
                 display.innerHTML = '<div class="empty-list">No entries in the waiting list.</div>';
                 return;
@@ -760,7 +838,7 @@
                                 📞 ${entry.phone}
                             </div>
                         </div>
-                        <button class="btn btn-delete-admin" onclick="deleteAdminEntry(${entry.id}, '${entry.name.replace(/'/g, "\\'")}')">Complete/Remove</button>
+                        <button class="btn btn-delete-admin" onclick="deleteAdminEntry(${entry.id}, '${entry.name}')">Complete/Remove</button>
                     </div>
                 `;
             });
@@ -771,13 +849,13 @@
         async function checkPin() {
             const pin = document.getElementById('admin-pin').value;
             const messageDiv = document.getElementById('admin-message');
-            const currentPin = await getAdminPin();
+            const currentPin = await getAdminPin(); // Fetch PIN from DB
 
             if (pin === currentPin) {
                 isAdminLoggedIn = true;
                 document.getElementById('admin-pin').value = '';
                 updateAdminDisplay();
-                messageDiv.innerHTML = '';
+                showMessage(messageDiv, '', 'success');
             } else {
                 showMessage(messageDiv, 'Incorrect PIN. Please try again.', 'error');
             }
@@ -787,7 +865,7 @@
             const oldPinInput = document.getElementById('old-pin').value;
             const newPin = document.getElementById('new-pin').value;
             const messageDiv = document.getElementById('pin-change-message');
-            const currentPin = await getAdminPin();
+            const currentPin = await getAdminPin(); // Fetch current PIN from DB
 
             if (!oldPinInput || !newPin) {
                 showMessage(messageDiv, 'Please fill in both the current PIN and the new PIN fields.', 'error');
@@ -800,24 +878,30 @@
             }
 
             if (newPin.length < 4) {
-                showMessage(messageDiv, 'The New PIN must be at least 4 characters long.', 'error');
-                return;
+                 showMessage(messageDiv, 'The New PIN must be at least 4 characters long.', 'error');
+                 return;
             }
 
             if (newPin === oldPinInput) {
-                showMessage(messageDiv, 'The New PIN cannot be the same as the current PIN.', 'error');
-                return;
+                 showMessage(messageDiv, 'The New PIN cannot be the same as the current PIN.', 'error');
+                 return;
             }
 
+            // Success: Update the PIN in the database
             const success = await setAdminPin(newPin);
+            
             if (success) {
+                // Clear inputs and log the admin out for security
                 document.getElementById('old-pin').value = '';
                 document.getElementById('new-pin').value = '';
                 isAdminLoggedIn = false;
+                
                 showMessage(messageDiv, 'Admin PIN successfully updated and saved globally! Please log in again with the new PIN.', 'success', 10000);
-                updateAdminDisplay();
+                
+                // Revert Admin panel to locked state
+                updateAdminDisplay(); 
             } else {
-                showMessage(messageDiv, 'PIN update failed due to a database error. Check your RLS policy.', 'error', 10000);
+                 showMessage(messageDiv, 'PIN update failed due to a database error. Check your RLS policy.', 'error', 10000);
             }
         }
 
@@ -826,22 +910,27 @@
                 element.innerHTML = '';
                 return;
             }
+
             element.innerHTML = `<div class="message ${type}">${message}</div>`;
-            setTimeout(() => { element.innerHTML = ''; }, duration);
+            
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, duration);
         }
 
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', () => {
+        // Event listener for PIN input and initial UI update
+        document.addEventListener('DOMContentLoaded', function() {
             const pinInput = document.getElementById('admin-pin');
             if (pinInput) {
-                pinInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') checkPin();
+                pinInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkPin();
+                    }
                 });
             }
+            // Initial call to set form states correctly
             updateWaitlistForms();
-            updateWaitlistDisplay(); // Optional: pre-load public list
         });
     </script>
 </body>
 </html>
-
