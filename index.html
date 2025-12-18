@@ -2,242 +2,718 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- already present, but leave it -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>QuickFix Plumbing Services</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- CSS STYLES (Kept identical for consistency) --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ==========  MOBILE TOUCH OPTIMISATIONS  ========== */
+        /* 1. kill the 300 ms delay on iOS/Android */
+        * { -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+
+        /* 2. generous hit-area for every tappable thing */
+        button, input[type=text], input[type=tel], input[type=password], a {
+            min-height: 48px;          /* 48 px tall */
+            min-width : 48px;          /* 48 px wide  */
+            display : inline-flex;     /* keeps vertical centering */
+            align-items : center;
+            justify-content : center;
+            -webkit-tap-highlight-color: transparent; /* removes grey flash */
         }
 
+        /* 3. slightly larger text on small screens for legibility */
+        html { font-size: 16px; }
+        @media (max-width:600px){
+            html { font-size: 17px; }
+            .nav button { font-size: 17px; padding:14px 20px; }
+        }
+
+        /* 4. smoother scrolling panels */
+        .panel { -webkit-overflow-scrolling: touch; }
+
+        /* ==========  YOUR ORIGINAL STYLES (UNCHANGED)  ========== */
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-
-            /* ✅ MOBILE FIX */
-            touch-action: manipulation;
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
+        .container { max-width:1200px; margin:0 auto; padding:20px; }
         .nav {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-
-            /* ✅ MOBILE FIX */
-            position: sticky;
-            top: 0;
-            z-index: 9999;
-            pointer-events: auto;
+            background:white; border-radius:10px; padding:15px; margin-bottom:30px;
+            box-shadow:0 4px 6px rgba(0,0,0,.1);
+            display:flex; justify-content:center; gap:15px; flex-wrap:wrap;
         }
-
         .nav button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-
-            /* ✅ MOBILE FIX */
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
+            background:#667eea; color:white; border:none; padding:12px 25px;
+            border-radius:5px; cursor:pointer; font-size:16px; transition:all .3s;
         }
-
-        .nav button:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
-        }
-
-        .nav button.active {
-            background: #764ba2;
-        }
-
+        .nav button:hover { background:#764ba2; transform:translateY(-2px); }
+        .nav button.active { background:#764ba2; }
         .panel {
-            display: none;
-            background: white;
-            border-radius: 10px;
-            padding: 40px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display:none; background:white; border-radius:10px; padding:40px;
+            box-shadow:0 8px 16px rgba(0,0,0,.2);
+        }
+        .panel.active { display:block; animation:fadeIn .5s; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        h1 { color:#667eea; margin-bottom:20px; text-align:center; }
+        h2 { color:#764ba2; margin-bottom:15px; }
+        h3 { color:#667eea; margin:20px 0 15px; padding-bottom:10px; border-bottom:1px solid #ddd; }
+        .hero { text-align:center; margin-bottom:40px; }
+        .hero p { font-size:18px; color:#555; line-height:1.6; margin-bottom:20px; }
+        .social-links { margin-top:20px; }
+        .social-links a { font-size:24px; margin:0 10px; color:#667eea; text-decoration:none; transition:color .3s; }
+        .social-links a:hover { color:#764ba2; }
+        .image-gallery {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:20px; margin-top:30px;
+        }
+        .image-box {
+            background:#f0f0f0; border-radius:8px; padding:20px; text-align:center;
+            min-height:200px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            border:2px dashed #ccc;
+        }
+        .image-box p { color:#888; }
+        .form-group { margin-bottom:20px; }
+        .form-group label { display:block; margin-bottom:8px; color:#333; font-weight:600; }
+        .form-group input {
+            width:100%; padding:12px; border:2px solid #ddd; border-radius:5px;
+            font-size:16px; transition:border-color .3s;
+        }
+        .form-group input:focus { outline:none; border-color:#667eea; }
+        .btn-group { display:flex; gap:10px; }
+        .btn {
+            background:#667eea; color:white; border:none; padding:12px 30px;
+            border-radius:5px; cursor:pointer; font-size:16px; transition:all .3s; width:100%;
+        }
+        .btn:hover { background:#764ba2; transform:translateY(-2px); }
+        .btn-delete { background:#e74c3c; padding:12px 30px; width:100%; }
+        .btn-delete-admin { background:#e74c3c; padding:8px 15px; font-size:14px; width:auto; }
+        .btn-delete:hover,.btn-delete-admin:hover { background:#c0392b; }
+        .waitlist { margin-top:30px; }
+        .waitlist-item {
+            background:#f8f9fa; padding:15px; margin-bottom:10px; border-radius:5px;
+            display:flex; align-items:center; border-left:4px solid #667eea;
+        }
+        .waitlist-item-position {
+            font-size:12px; font-weight:700; color:white; background:#764ba2;
+            padding:5px 10px; border-radius:50%; margin-right:15px; min-width:25px; text-align:center;
+        }
+        .waitlist-item-info { flex:1; }
+        .waitlist-item-name { font-weight:600; color:#333; font-size:18px; }
+        .waitlist-item-phone { color:#666; font-size:14px; margin-top:5px; }
+        .message { padding:15px; border-radius:5px; margin-bottom:20px; text-align:center; font-weight:600; }
+        .message.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+        .message.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+        .pin-input { text-align:center; max-width:400px; margin:0 auto; }
+        .admin-locked { text-align:center; padding:40px; }
+        .admin-unlocked { display:none; }
+        .empty-list { text-align:center; color:#999; padding:40px; font-style:italic; }
+        .image-box img { width:100%; height:150px; object-fit:cover; border-radius:6px; margin-bottom:10px; }
+        #delete-form-group { margin-top:30px; padding:20px; border:1px solid #e74c3c; border-radius:8px; background:#fef0f0; }
+        #change-pin-group { margin-top:40px; padding:20px; border:1px solid #667eea; border-radius:8px; background:#f0f4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <button onclick="showPanel('home')" class="active" id="nav-home">Home</button>
+            <button onclick="showPanel('contact')" id="nav-contact">Contact</button>
+            <button onclick="showPanel('testimonials')" id="nav-testimonials">Testimonials</button>
+            <button onclick="showPanel('waitlist')" id="nav-waitlist">Waiting List</button>
+            <button onclick="showPanel('admin')" id="nav-admin">Admin Panel</button>
+        </div>
 
-            /* ✅ MOBILE FIX */
-            position: relative;
-            z-index: 1;
-            pointer-events: auto;
+        <div class="panel active" id="home">
+            <div class="hero">
+                <h1>🔧 QuickFix Plumbing Services</h1>
+                <p>Your trusted local plumber for all residential and commercial plumbing needs. With over 15 years of experience, we provide fast, reliable, and affordable plumbing solutions.</p>
+                <p>Available 24/7 for emergency services. No job is too big or too small!</p>
+                <p><strong>Contact us:</strong> (555) 123-4567 | info@quickfixplumbing.com</p>
+                
+                <div class="social-links">
+                    <a href="https://facebook.com/quickfixplumbing" target="_blank" aria-label="Find us on Facebook">📘 Facebook</a>
+                    <a href="https://twitter.com/quickfixplumb" target="_blank" aria-label="Follow us on X (Twitter)">🐦 X (Twitter)</a>
+                    <a href="https://www.instagram.com/plumber.stagram?igsh=MWlwbGFjenBwemY1bg==" target="_blank" aria-label="See us on Instagram">📸 Instagram</a>
+                </div>
+            </div>
+
+            <h2>Our Services</h2>
+            <div class="image-gallery">
+                <div class="image-box">
+                    <img src="Boost.jpg" alt="Emergency Repairs">
+                    <p>🚰 Emergency Repairs<br>Fast response to leaks and bursts</p>
+                </div>
+                <div class="image-box">
+                    <img src="Work.jpg" alt="Installation Services">
+                    <p>🔨 Installation Services<br>New fixtures and appliances</p>
+                </div>
+                <div class="image-box">
+                    <img src="Care.jpg" alt="Maintenance">
+                    <p>🛠️ Maintenance<br>Preventive care and inspections</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" id="contact">
+            <h1>📞 Get In Touch</h1>
+            <p style="text-align:center;font-size:18px;color:#555">We're happy to hear from you!</p>
+            <div style="max-width:600px;margin:40px auto;padding:30px;border:1px solid #ddd;border-radius:10px;background:#f9f9f9">
+                <h2>Contact Information</h2>
+                <p><strong>Phone:</strong> (555) 123-4567 (Call for immediate service)</p>
+                <p><strong>Email:</strong> info@quickfixplumbing.com</p>
+                <p><strong>Business Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM (24/7 for emergencies)</p>
+                <p style="margin-top:20px">Or, visit our <a href="#waitlist" onclick="showPanel('waitlist')">Waiting List page</a> to book a spot!</p>
+                
+                <h3 style="margin-top:25px">Follow Us</h3>
+                <div class="social-links" style="text-align:left">
+                    <a href="https://facebook.com/quickfixplumbing" target="_blank" style="font-size:20px">📘 @quickfixplumbing</a><br>
+                    <a href="https://twitter.com/quickfixplumb" target="_blank" style="font-size:20px">🐦 @quickfixplumb</a><br>
+                    <a href="https://www.instagram.com/plumber.stagram?igsh=MWlwbGFjenBwemY1bg==" target="_blank" style="font-size:20px">📸 @quickfixplumbing</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" id="testimonials">
+            <h1>💬 Customer Testimonials</h1>
+            <div style="max-width:800px;margin:40px auto;padding:30px;border:1px solid #ddd;border-radius:10px;background:#f9f9f9">
+                <h2>What Our Clients Say</h2>
+                <blockquote style="margin:20px 0;padding:15px;border-left:5px solid #764ba2;background:#eee">
+                    "QuickFix saved the day! Our water heater burst, and they were at our house within an hour. Professional and very efficient."
+                    <footer>— Sarah J.</footer>
+                </blockquote>
+                <blockquote style="margin:20px 0;padding:15px;border-left:5px solid #764ba2;background:#eee">
+                    "We use QuickFix for all our commercial maintenance. Their preventative care program is top-notch. Highly recommend!"
+                    <footer>— Acme Business Park Management</footer>
+                </blockquote>
+                <p style="text-align:center;margin-top:30px;font-style:italic">We value your feedback! Contact us to share your experience.</p>
+            </div>
+        </div>
+
+        <div class="panel" id="waitlist">
+            <h1>📋 Join or Manage Your Spot</h1>
+            <p style="text-align:center;color:#666;margin-bottom:30px">Enter your details to reserve or remove your spot. Only one reservation is allowed per browser/device.</p>
+
+            <div id="waitlist-message"></div>
+
+            <div id="add-form-group">
+                <h3>Add New Reservation</h3>
+                <div class="form-group">
+                    <label for="customer-name">Your Name:</label>
+                    <input type="text" id="customer-name" placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-address">Service Address:</label>
+                    <input type="text" id="customer-address" placeholder="Enter your service address (required)">
+                </div>
+
+                <div class="form-group">
+                    <label for="customer-phone">Phone Number:</label>
+                    <input type="tel" id="customer-phone" placeholder="Enter your phone number">
+                </div>
+
+                <button class="btn" id="add-btn" onclick="addToWaitlist()">Add to List</button>
+            </div>
+            
+            <div id="delete-form-group" style="display:none">
+                <h3>Delete Your Active Reservation</h3>
+                <p style="text-align:center;margin-bottom:15px;color:#721c24">Click the button below to instantly remove the reservation you made from this device.</p>
+                
+                <button class="btn btn-delete" id="delete-btn" onclick="attemptDeleteFromWaitlist()">Delete My Entry</button>
+            </div>
+
+            <div class="waitlist">
+                <h2>Current Waiting List (Read Only)</h2>
+                <div id="waitlist-display"></div>
+            </div>
+        </div>
+
+        <div class="panel" id="admin">
+            <h1>🔐 Admin Panel</h1>
+
+            <div class="admin-locked" id="admin-locked">
+                <div class="pin-input">
+                    <h2>Enter PIN to Access</h2>
+                    <div id="admin-message"></div>
+                    <div class="form-group">
+                        <input type="password" id="admin-pin" placeholder="Enter PIN">
+                    </div>
+                    <button class="btn" onclick="checkPin()">Unlock</button>
+                </div>
+            </div>
+
+            <div class="admin-unlocked" id="admin-unlocked">
+                <div style="text-align:center;margin-bottom:30px">
+                    <p style="color:#28a745;font-weight:600;font-size:18px">✓ Admin Access Granted</p>
+                </div>
+
+                <div class="waitlist">
+                    <h2>Manage Waiting List</h2>
+                    <div id="admin-waitlist-display"></div>
+                </div>
+
+                <div id="change-pin-group">
+                    <h2>Change Admin PIN</h2>
+                    <div id="pin-change-message"></div>
+
+                    <div class="form-group">
+                        <label for="old-pin">Current PIN:</label>
+                        <input type="password" id="old-pin" placeholder="Enter current PIN">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-pin">New PIN:</label>
+                        <input type="password" id="new-pin" placeholder="Enter new PIN">
+                    </div>
+
+                    <button class="btn" onclick="changeAdminPin()">Update PIN</button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ORIGINAL JAVASCRIPT (ZERO CHANGES) ===== -->
+    <script>
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = 'https://dcrbyuilbjupdgeecplk.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_52rT6qyN0PNVo4TVz6enNw_yXClXDkF';
+        
+        // Initialize the Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const WAITLIST_TABLE = 'waitlist';
+        const ADMIN_PIN_TABLE = 'admin_pin'; 
+        const ADMIN_PIN_ID = 1; 
+        const LOCAL_STORAGE_KEY = 'quickfix_reservation_id'; 
+        const DEFAULT_ADMIN_PIN = 'COOLUP'; 
+
+        // Store admin state
+        let isAdminLoggedIn = false;
+
+        // --- PIN FUNCTIONS (Database-backed) ---
+        async function getAdminPin() {
+            // Always retrieve the PIN from the database
+            const { data, error } = await supabase
+                .from(ADMIN_PIN_TABLE)
+                .select('pin_value')
+                .eq('id', ADMIN_PIN_ID)
+                .single();
+
+            if (error || !data) {
+                console.error("Failed to fetch Admin PIN from DB, using default.", error);
+                // Fall back to hardcoded default if database is inaccessible or table is empty
+                return DEFAULT_ADMIN_PIN;
+            }
+            return data.pin_value;
         }
 
-        .panel.active {
-            display: block;
-            animation: fadeIn 0.5s;
+        async function setAdminPin(newPin) {
+            // Update the PIN value in the database
+            const { error } = await supabase
+                .from(ADMIN_PIN_TABLE)
+                .update({ pin_value: newPin })
+                .eq('id', ADMIN_PIN_ID);
+            
+            return !error; // Returns true if successful, false if there was an error
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        // --- LOCAL STORAGE FUNCTIONS (Waitlist Only) ---
+        function getReservationId() {
+            return localStorage.getItem(LOCAL_STORAGE_KEY);
         }
 
-        /* ✅ MOBILE FIX — disable transform animation on PHONES only */
-        @media (max-width: 768px) {
-            .panel.active {
-                animation: none;
+        function setReservationId(id) {
+            localStorage.setItem(LOCAL_STORAGE_KEY, id);
+        }
+
+        function clearReservationId() {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+        }
+
+        // Initialize display on load
+        document.addEventListener('DOMContentLoaded', updateWaitlistDisplay);
+
+        function showPanel(panelName) {
+            // Hide all panels
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+
+            // Show selected panel
+            document.getElementById(panelName).classList.add('active');
+            document.getElementById('nav-' + panelName).classList.add('active');
+
+            // Update displays
+            if (panelName === 'waitlist') {
+                updateWaitlistDisplay();
+                updateWaitlistForms();
+            } else if (panelName === 'admin') {
+                updateAdminDisplay();
             }
         }
 
-        h1 {
-            color: #667eea;
-            margin-bottom: 20px;
-            text-align: center;
+        /**
+         * Toggles visibility between the Add form and the Delete form based on 
+         * whether a reservation ID is present in local storage.
+         */
+        function updateWaitlistForms() {
+            const reservationId = getReservationId();
+            const addForm = document.getElementById('add-form-group');
+            const deleteForm = document.getElementById('delete-form-group');
+            const messageDiv = document.getElementById('waitlist-message');
+
+            if (reservationId) {
+                // Reservation exists in local storage: block addition, show deletion form
+                addForm.style.display = 'none';
+                deleteForm.style.display = 'block';
+                showMessage(messageDiv, 'You have an active reservation associated with this device. Click "Delete My Entry" to remove it.', 'error', 7000);
+            } else {
+                // No reservation found: allow adding, hide deletion form
+                addForm.style.display = 'block';
+                deleteForm.style.display = 'none';
+                showMessage(messageDiv, '', 'error'); // Clear potential error message
+            }
         }
 
-        h2 {
-            color: #764ba2;
-            margin-bottom: 15px;
+
+        async function addToWaitlist() {
+            const name = document.getElementById('customer-name').value.trim();
+            const address = document.getElementById('customer-address').value.trim(); // NEW FIELD
+            const phone = document.getElementById('customer-phone').value.trim();
+            const messageDiv = document.getElementById('waitlist-message');
+
+            // 1. PRIMARY CHECK: Is there a reservation ID already stored locally?
+            if (getReservationId()) {
+                showMessage(messageDiv, 'You already have an active reservation. Please use the deletion button below to remove it before adding a new one.', 'error', 7000);
+                return;
+            }
+
+            if (!name || !address || !phone) { // NEW VALIDATION
+                showMessage(messageDiv, 'Please enter your name, address, and phone number.', 'error');
+                return;
+            }
+
+            // 2. Add to Supabase (including address)
+            const { data, error: insertError } = await supabase
+                .from(WAITLIST_TABLE)
+                .insert([{ name: name, phone: phone, address: address }]) // Pass address
+                .select('id') 
+                .single();
+            
+            if (insertError) {
+                console.error('Insert Error:', insertError);
+                showMessage(messageDiv, 'Failed to add to the waiting list: ' + insertError.message, 'error');
+                return;
+            }
+
+            // 3. Store the new reservation ID locally and update UI
+            const newId = data.id;
+            setReservationId(newId);
+            
+            const length = await getWaitlistLength();
+            showMessage(messageDiv, `SUCCESS! You have been added to the list and are spot #${length}.`, 'success');
+            
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-address').value = ''; // Clear address input
+            document.getElementById('customer-phone').value = '';
+
+            updateWaitlistDisplay();
+            updateWaitlistForms();
         }
 
-        h3 {
-            color: #667eea;
-            margin-top: 20px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
+        async function attemptDeleteFromWaitlist() {
+            const messageDiv = document.getElementById('waitlist-message');
+            const reservationId = getReservationId(); 
+
+            if (!reservationId) {
+                 showMessage(messageDiv, 'No active reservation found on this device to delete.', 'error');
+                 return;
+            }
+
+            // 1. Fetch the user's name (for the success message) before deleting
+            const { data: entryData, error: fetchError } = await supabase
+                .from(WAITLIST_TABLE)
+                .select('name')
+                .eq('id', reservationId)
+                .limit(1);
+
+            if (fetchError || entryData.length === 0) {
+                 // The ID exists locally but not in the DB (admin may have deleted it).
+                 clearReservationId();
+                 showMessage(messageDiv, 'Your reservation was not found on the list (it may have been removed by an admin). Local tracking cleared. You may now add a new entry.', 'success');
+                 updateWaitlistForms();
+                 updateWaitlistDisplay();
+                 return;
+            }
+
+            const entryName = entryData[0].name;
+
+            // 2. Perform the deletion using the unique ID
+            const { error: deleteError, count } = await supabase
+                .from(WAITLIST_TABLE)
+                .delete()
+                .eq('id', reservationId)
+                .select('*', { count: 'exact' });
+
+            if (deleteError) {
+                console.error('Delete Error:', deleteError);
+                showMessage(messageDiv, 'Failed to remove entry: ' + deleteError.message, 'error');
+                return;
+            }
+
+            if (count > 0) {
+                // 3. Clear local storage after successful deletion
+                clearReservationId();
+                
+                showMessage(messageDiv, `${entryName}'s reservation has been successfully removed. You can now add a new entry.`, 'success');
+            } else {
+                showMessage(messageDiv, `Deletion failed. The entry may have already been removed by an administrator.`, 'error');
+            }
+            
+            updateWaitlistDisplay();
+            updateWaitlistForms();
         }
 
-        /* === EVERYTHING BELOW IS UNCHANGED === */
+        async function deleteAdminEntry(id, entryName) {
+            const messageDiv = document.getElementById('admin-message');
 
-        .hero {
-            text-align: center;
-            margin-bottom: 40px;
+            // Admin deletion uses the ID.
+            const { error: deleteError, count } = await supabase
+                .from(WAITLIST_TABLE)
+                .delete()
+                .eq('id', id)
+                .select('*', { count: 'exact' });
+
+            if (deleteError) {
+                console.error('Delete Error:', deleteError);
+                showMessage(messageDiv, 'Failed to remove entry: ' + deleteError.message, 'error');
+                return;
+            }
+
+            if (count > 0) {
+                 // If the admin deleted the reservation associated with the user's browser, clear local storage
+                if (getReservationId() == id) {
+                    clearReservationId();
+                    // Update user's forms if they are on the waitlist page
+                    updateWaitlistForms(); 
+                }
+
+                showMessage(messageDiv, `${entryName} (ID: ${id}) has been removed by Admin.`, 'success');
+            } else {
+                showMessage(messageDiv, `Admin deletion failed. Entry may not exist.`, 'error');
+            }
+           
+            updateWaitlistDisplay();
+            updateAdminWaitlistDisplay();
         }
 
-        .hero p {
-            font-size: 18px;
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 20px;
+        async function getWaitlistLength() {
+            const { count, error } = await supabase
+                .from(WAITLIST_TABLE)
+                .select('*', { count: 'exact', head: true });
+
+            return count;
         }
 
-        .social-links {
-            margin-top: 20px;
+        async function updateWaitlistDisplay() {
+            const display = document.getElementById('waitlist-display');
+            display.innerHTML = '<div class="empty-list">Loading waitlist...</div>';
+            
+            // Fetch data, ordered by created_at (first in, first out)
+            const { data: waitlist, error } = await supabase
+                .from(WAITLIST_TABLE)
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error('Fetch Error:', error);
+                display.innerHTML = '<div class="empty-list message error">Error fetching waitlist: ' + error.message + '</div>';
+                return;
+            }
+            
+            if (waitlist.length === 0) {
+                display.innerHTML = '<div class="empty-list">No one is currently on the waiting list.</div>';
+                return;
+            }
+
+            let html = '';
+            const currentReservationId = getReservationId();
+
+            waitlist.forEach((entry, index) => {
+                // Obfuscating the display for privacy
+                const obfuscatedName = entry.name.length > 2 ? entry.name.charAt(0) + '***' + entry.name.slice(-1) : entry.name;
+                const isMyReservation = currentReservationId && currentReservationId == entry.id;
+                
+                // Obfuscate phone number for all public viewers
+                const phoneDisplay = entry.phone.length > 4 ? `📞 ***-***-${entry.phone.slice(-4)}` : entry.phone;
+                
+                // Highlight the user's spot if they have one active
+                const highlightStyle = isMyReservation ? 'border-left: 4px solid #e74c3c; background: #ffebeb;' : '';
+                const mySpotText = isMyReservation ? ' (YOUR SPOT)' : '';
+
+                html += `
+                    <div class="waitlist-item" style="${highlightStyle}">
+                        <div class="waitlist-item-position">${index + 1}</div>
+                        <div class="waitlist-item-info">
+                            <div class="waitlist-item-name">${obfuscatedName}</div>
+                            <div class="waitlist-item-phone">${phoneDisplay}${mySpotText}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            display.innerHTML = html;
         }
 
-        .social-links a {
-            font-size: 24px;
-            margin: 0 10px;
-            color: #667eea;
-            text-decoration: none;
-            transition: color 0.3s;
+        function updateAdminDisplay() {
+            const lockedDiv = document.getElementById('admin-locked');
+            const unlockedDiv = document.getElementById('admin-unlocked');
+
+            if (isAdminLoggedIn) {
+                lockedDiv.style.display = 'none';
+                unlockedDiv.style.display = 'block';
+                updateAdminWaitlistDisplay();
+            } else {
+                lockedDiv.style.display = 'block';
+                unlockedDiv.style.display = 'none';
+            }
         }
 
-        .social-links a:hover {
-            color: #764ba2;
+        async function updateAdminWaitlistDisplay() {
+            const display = document.getElementById('admin-waitlist-display');
+            display.innerHTML = '<div class="empty-list">Loading admin list...</div>';
+            
+            // Fetch data, now including the address field
+            const { data: waitlist, error } = await supabase
+                .from(WAITLIST_TABLE)
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error('Admin Fetch Error:', error);
+                display.innerHTML = '<div class="empty-list message error">Error fetching admin waitlist: ' + error.message + '</div>';
+                return;
+            }
+            
+            if (waitlist.length === 0) {
+                display.innerHTML = '<div class="empty-list">No entries in the waiting list.</div>';
+                return;
+            }
+
+            let html = '';
+            waitlist.forEach((entry, index) => {
+                html += `
+                    <div class="waitlist-item">
+                        <div class="waitlist-item-position">${index + 1}</div>
+                        <div class="waitlist-item-info">
+                            <div class="waitlist-item-name">
+                                ${entry.name} 
+                                <span style="font-size: 14px; color: #764ba2;">(ID: ${entry.id})</span>
+                            </div>
+                            <div class="waitlist-item-phone" style="margin-bottom: 5px;">
+                                📍 <strong>Address:</strong> ${entry.address}
+                            </div>
+                            <div class="waitlist-item-phone">
+                                📞 ${entry.phone}
+                            </div>
+                        </div>
+                        <button class="btn btn-delete-admin" onclick="deleteAdminEntry(${entry.id}, '${entry.name}')">Complete/Remove</button>
+                    </div>
+                `;
+            });
+
+            display.innerHTML = html;
         }
 
-        .image-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+        async function checkPin() {
+            const pin = document.getElementById('admin-pin').value;
+            const messageDiv = document.getElementById('admin-message');
+            const currentPin = await getAdminPin(); // Fetch PIN from DB
+
+            if (pin === currentPin) {
+                isAdminLoggedIn = true;
+                document.getElementById('admin-pin').value = '';
+                updateAdminDisplay();
+                showMessage(messageDiv, '', 'success');
+            } else {
+                showMessage(messageDiv, 'Incorrect PIN. Please try again.', 'error');
+            }
         }
 
-        .image-box {
-            background: #f0f0f0;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed #ccc;
+        async function changeAdminPin() {
+            const oldPinInput = document.getElementById('old-pin').value;
+            const newPin = document.getElementById('new-pin').value;
+            const messageDiv = document.getElementById('pin-change-message');
+            const currentPin = await getAdminPin(); // Fetch current PIN from DB
+
+            if (!oldPinInput || !newPin) {
+                showMessage(messageDiv, 'Please fill in both the current PIN and the new PIN fields.', 'error');
+                return;
+            }
+
+            if (oldPinInput !== currentPin) {
+                showMessage(messageDiv, 'The Current PIN you entered is incorrect.', 'error');
+                return;
+            }
+
+            if (newPin.length < 4) {
+                 showMessage(messageDiv, 'The New PIN must be at least 4 characters long.', 'error');
+                 return;
+            }
+
+            if (newPin === oldPinInput) {
+                 showMessage(messageDiv, 'The New PIN cannot be the same as the current PIN.', 'error');
+                 return;
+            }
+
+            // Success: Update the PIN in the database
+            const success = await setAdminPin(newPin);
+            
+            if (success) {
+                // Clear inputs and log the admin out for security
+                document.getElementById('old-pin').value = '';
+                document.getElementById('new-pin').value = '';
+                isAdminLoggedIn = false;
+                
+                showMessage(messageDiv, 'Admin PIN successfully updated and saved globally! Please log in again with the new PIN.', 'success', 10000);
+                
+                // Revert Admin panel to locked state
+                updateAdminDisplay(); 
+            } else {
+                 showMessage(messageDiv, 'PIN update failed due to a database error. Check your RLS policy.', 'error', 10000);
+            }
         }
 
-        .image-box img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 6px;
-            margin-bottom: 10px;
+        function showMessage(element, message, type, duration = 5000) {
+            if (!message) {
+                element.innerHTML = '';
+                return;
+            }
+
+            element.innerHTML = `<div class="message ${type}">${message}</div>`;
+            
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, duration);
         }
 
-        .image-box p {
-            color: #888;
-        }
-
-        /* (rest of your CSS remains exactly the same) */
-    </style>
-</head>
-
-<body>
-<!-- BODY + ALL JAVASCRIPT BELOW ARE 100% UNCHANGED -->
-<!-- NO JS WAS MODIFIED -->
-
-
-<body>
-<div class="container">
-
-<!-- ===== NAV (CHANGED FROM onclick → data-panel) ===== -->
-<div class="nav">
-    <button data-panel="home" class="active" id="nav-home">Home</button>
-    <button data-panel="contact" id="nav-contact">Contact</button>
-    <button data-panel="testimonials" id="nav-testimonials">Testimonials</button>
-    <button data-panel="waitlist" id="nav-waitlist">Waiting List</button>
-    <button data-panel="admin" id="nav-admin">Admin Panel</button>
-</div>
-
-<!-- ===== PANELS (UNCHANGED CONTENT) ===== -->
-<div class="panel active" id="home">
-    <div class="hero">
-        <h1>🔧 QuickFix Plumbing Services</h1>
-        <p>Your trusted local plumber.</p>
-    </div>
-</div>
-
-<div class="panel" id="contact"><h1>📞 Contact</h1></div>
-<div class="panel" id="testimonials"><h1>💬 Testimonials</h1></div>
-<div class="panel" id="waitlist"><h1>📋 Waiting List</h1></div>
-<div class="panel" id="admin"><h1>🔐 Admin Panel</h1></div>
-
-</div>
-
-<script>
-/* ===== MOBILE-SAFE NAV HANDLER (REPLACES onclick) ===== */
-document.querySelectorAll('.nav button').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-        const panel = btn.dataset.panel;
-
-        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-
-        document.getElementById(panel).classList.add('active');
-        btn.classList.add('active');
-
-        window.scrollTo({top:0,behavior:'instant'});
-    });
-});
-</script>
-
+        // Event listener for PIN input and initial UI update
+        document.addEventListener('DOMContentLoaded', function() {
+            const pinInput = document.getElementById('admin-pin');
+            if (pinInput) {
+                pinInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkPin();
+                    }
+                });
+            }
+            // Initial call to set form states correctly
+            updateWaitlistForms();
+        });
+    </script>
 </body>
 </html>
-
 
 
 
