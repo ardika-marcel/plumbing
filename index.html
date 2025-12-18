@@ -62,6 +62,7 @@
 
         .nav button:active {
             background: #764ba2;
+            transform: translateY(-2px);
         }
 
         .nav button.active {
@@ -198,6 +199,8 @@
             font-size: 16px;
             transition: all 0.3s;
             width: 100%;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         @media (hover: hover) {
@@ -209,6 +212,7 @@
 
         .btn:active {
             background: #764ba2;
+            transform: translateY(-2px);
         }
 
         .btn-delete {
