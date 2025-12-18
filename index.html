@@ -957,9 +957,36 @@
             }
             // Initial call to set form states correctly
             updateWaitlistForms();
+            
+            // --- MOBILE NAVIGATION FIX ---
+            setupMobileNav();
         });
+
+        function setupMobileNav() {
+            let isScrolling = false;
+            
+            // Track scrolling to distinguish between a tap and a scroll
+            document.addEventListener('touchmove', () => { isScrolling = true; }, { passive: true });
+            document.addEventListener('touchstart', () => { isScrolling = false; }, { passive: true });
+
+            const navButtons = document.querySelectorAll('.nav button');
+            navButtons.forEach(btn => {
+                btn.addEventListener('touchend', (e) => {
+                    // If we haven't scrolled, treat this as a tap
+                    if (!isScrolling) {
+                        e.preventDefault(); // Stop the browser from firing a delayed click (and any ghost clicks)
+                        
+                        // Determine which panel to show based on the button's ID
+                        // IDs are like 'nav-home', 'nav-contact' -> we want 'home', 'contact'
+                        const panelId = btn.id.replace('nav-', '');
+                        showPanel(panelId);
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>
+
 
 
