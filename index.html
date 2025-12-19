@@ -320,18 +320,17 @@
             background-color: #f0f4ff;
         }
         
-        /* DELETED: Styles for the About Us panel content */
     </style>
 </head>
 <body>
     <div class="container">
         <div class="nav">
-        <button onclick="showPanel('home')" ontouchstart="showPanel('home')" class="active" id="nav-home">Home</button>
-        <button onclick="showPanel('contact')" ontouchstart="showPanel('contact')" id="nav-contact">Contact</button>
-        <button onclick="showPanel('testimonials')" ontouchstart="showPanel('testimonials')" id="nav-testimonials">Testimonials</button>
-        <button onclick="showPanel('waitlist')" ontouchstart="showPanel('waitlist')" id="nav-waitlist">Waiting List</button>
-        <button onclick="showPanel('admin')" ontouchstart="showPanel('admin')" id="nav-admin">Admin Panel</button>
-    </div>
+            <button onclick="showPanel('home')" class="active" id="nav-home">Home</button>
+            <button onclick="showPanel('contact')" id="nav-contact">Contact</button>
+            <button onclick="showPanel('testimonials')" id="nav-testimonials">Testimonials</button>
+            <button onclick="showPanel('waitlist')" id="nav-waitlist">Waiting List</button>
+            <button onclick="showPanel('admin')" id="nav-admin">Admin Panel</button>
+        </div>
 
         <div class="panel active" id="home">
             <div class="hero">
@@ -354,7 +353,7 @@
             </div>
 
             <h2>Our Services</h2>
-            <div class="panel active" id="home">
+            <div class="image-gallery">
                 <div class="image-box">
                     <img src="Boost.jpg" alt="Emergency Repairs">
                     <p>🚰 Emergency Repairs<br>Fast response to leaks and bursts</p>
@@ -495,441 +494,205 @@
         </div>
     </div>
 
-    <script>
-        // --- SUPABASE CONFIGURATION ---
-        const SUPABASE_URL = 'https://dcrbyuilbjupdgeecplk.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_52rT6qyN0PNVo4TVz6enNw_yXClXDkF';
-        
-        // Initialize the Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const WAITLIST_TABLE = 'waitlist';
-        const ADMIN_PIN_TABLE = 'admin_pin'; 
-        const ADMIN_PIN_ID = 1; 
-        const LOCAL_STORAGE_KEY = 'quickfix_reservation_id'; 
-        const DEFAULT_ADMIN_PIN = 'COOLUP'; 
+<script>
+ // Supabase Configuration
+const SUPABASE_URL = 'https://dcrbyuilbjupdgeecplk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_52rT6qyN0PNVo4TVz6enNw_yXClXDkF';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Store admin state
-        let isAdminLoggedIn = false;
+const ADMIN_PIN = "COOLUP"; // As requested
+const DEVICE_ID_KEY = 'plumbing_device_id';
 
-        // --- PIN FUNCTIONS (Database-backed) ---
-        async function getAdminPin() {
-            // Always retrieve the PIN from the database
-            const { data, error } = await supabase
-                .from(ADMIN_PIN_TABLE)
-                .select('pin_value')
-                .eq('id', ADMIN_PIN_ID)
-                .single();
+// Helper: Get or Create unique Device ID
+function getDeviceId() {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+        id = 'dev_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+}
 
-            if (error || !data) {
-                console.error("Failed to fetch Admin PIN from DB, using default.", error);
-                // Fall back to hardcoded default if database is inaccessible or table is empty
-                return DEFAULT_ADMIN_PIN;
-            }
-            return data.pin_value;
-        }
+// --- Navigation ---
+async function showPanel(panelId) {
+    document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`nav-${panelId}`).classList.add('active');
+    document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
 
-        async function setAdminPin(newPin) {
-            // Update the PIN value in the database
-            const { error } = await supabase
-                .from(ADMIN_PIN_TABLE)
-                .update({ pin_value: newPin })
-                .eq('id', ADMIN_PIN_ID);
-            
-            return !error; // Returns true if successful, false if there was an error
-        }
+    if (panelId === 'waitlist') refreshWaitlist();
+    if (panelId === 'admin') refreshAdminWaitlist();
+}
 
-        // --- LOCAL STORAGE FUNCTIONS (Waitlist Only) ---
-        function getReservationId() {
-            return localStorage.getItem(LOCAL_STORAGE_KEY);
-        }
+// --- Public Waitlist Logic ---
+async function refreshWaitlist() {
+    const { data, error } = await _supabase
+        .from('waitlist')
+        .select('name, device_id')
+        .order('created_at', { ascending: true });
 
-        function setReservationId(id) {
-            localStorage.setItem(LOCAL_STORAGE_KEY, id);
-        }
+    const display = document.getElementById('waitlist-display');
+    const addGroup = document.getElementById('add-form-group');
+    const deleteGroup = document.getElementById('delete-form-group');
+    const myDeviceId = getDeviceId();
 
-        function clearReservationId() {
-            localStorage.removeItem(LOCAL_STORAGE_KEY);
-        }
+    if (error) return console.error(error);
 
-        // Initialize display on load
-        document.addEventListener('DOMContentLoaded', updateWaitlistDisplay);
+    // Check if current device already has a reservation
+    const myEntry = data.find(item => item.device_id === myDeviceId);
+    addGroup.style.display = myEntry ? 'none' : 'block';
+    deleteGroup.style.display = myEntry ? 'block' : 'none';
 
-        function showPanel(panelName) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    if (data.length === 0) {
+        display.innerHTML = '<p class="empty-list">The list is currently empty.</p>';
+        return;
+    }
 
-            document.getElementById(panelName).classList.add('active');
-            document.getElementById('nav-' + panelName).classList.add('active');
+    display.innerHTML = data.map((item, index) => `
+        <div class="waitlist-item">
+            <div class="waitlist-item-position">${index + 1}</div>
+            <div class="waitlist-item-info">
+                <div class="waitlist-item-name">${item.name} ${item.device_id === myDeviceId ? '(You)' : ''}</div>
+                <div class="waitlist-item-phone">Status: Waiting</div>
+            </div>
+        </div>
+    `).join('');
+}
 
+async function addToWaitlist() {
+    const name = document.getElementById('customer-name').value.trim();
+    const address = document.getElementById('customer-address').value.trim();
+    const phone = document.getElementById('customer-phone').value.trim();
 
-            // Update displays
-            if (panelName === 'waitlist') {
-                updateWaitlistDisplay();
-                updateWaitlistForms();
-            } else if (panelName === 'admin') {
-                updateAdminDisplay();
-            }
-        }
+    if (!name || !address || !phone) return alert("Please fill all fields");
 
-        /**
-         * Toggles visibility between the Add form and the Delete form based on 
-         * whether a reservation ID is present in local storage.
-         */
-        function updateWaitlistForms() {
-            const reservationId = getReservationId();
-            const addForm = document.getElementById('add-form-group');
-            const deleteForm = document.getElementById('delete-form-group');
-            const messageDiv = document.getElementById('waitlist-message');
+    const { error } = await _supabase.from('waitlist').insert([{
+        name, address, phone, device_id: getDeviceId()
+    }]);
 
-            if (reservationId) {
-                // Reservation exists in local storage: block addition, show deletion form
-                addForm.style.display = 'none';
-                deleteForm.style.display = 'block';
-                showMessage(messageDiv, 'You have an active reservation associated with this device. Click "Delete My Entry" to remove it.', 'error', 7000);
-            } else {
-                // No reservation found: allow adding, hide deletion form
-                addForm.style.display = 'block';
-                deleteForm.style.display = 'none';
-                showMessage(messageDiv, '', 'error'); // Clear potential error message
-            }
-        }
+    if (error) alert("Error adding to list: " + error.message);
+    else {
+        document.querySelectorAll('#add-form-group input').forEach(i => i.value = '');
+        refreshWaitlist();
+    }
+}
 
+async function attemptDeleteFromWaitlist() {
+    const { error } = await _supabase
+        .from('waitlist')
+        .delete()
+        .eq('device_id', getDeviceId());
 
-        async function addToWaitlist() {
-            const name = document.getElementById('customer-name').value.trim();
-            const address = document.getElementById('customer-address').value.trim(); // NEW FIELD
-            const phone = document.getElementById('customer-phone').value.trim();
-            const messageDiv = document.getElementById('waitlist-message');
+    if (error) alert("Delete failed");
+    else refreshWaitlist();
+}
 
-            // 1. PRIMARY CHECK: Is there a reservation ID already stored locally?
-            if (getReservationId()) {
-                showMessage(messageDiv, 'You already have an active reservation. Please use the deletion button below to remove it before adding a new one.', 'error', 7000);
-                return;
-            }
+// --- Admin Logic ---
+function checkPin() {
+    const pin = document.getElementById('admin-pin').value;
+    if (pin === ADMIN_PIN) {
+        document.getElementById('admin-locked').style.display = 'none';
+        document.getElementById('admin-unlocked').style.display = 'block';
+        refreshAdminWaitlist();
+    } else {
+        alert("Incorrect PIN");
+    }
+}
 
-            if (!name || !address || !phone) { // NEW VALIDATION
-                showMessage(messageDiv, 'Please enter your name, address, and phone number.', 'error');
-                return;
-            }
+async function refreshAdminWaitlist() {
+    const { data, error } = await _supabase
+        .from('waitlist')
+        .select('*')
+        .order('created_at', { ascending: true });
 
-            // 2. Add to Supabase (including address)
-            const { data, error: insertError } = await supabase
-                .from(WAITLIST_TABLE)
-                .insert([{ name: name, phone: phone, address: address }]) // Pass address
-                .select('id') 
-                .single();
-            
-            if (insertError) {
-                console.error('Insert Error:', insertError);
-                showMessage(messageDiv, 'Failed to add to the waiting list: ' + insertError.message, 'error');
-                return;
-            }
+    const display = document.getElementById('admin-waitlist-display');
+    if (error || !data) return;
 
-            // 3. Store the new reservation ID locally and update UI
-            const newId = data.id;
-            setReservationId(newId);
-            
-            const length = await getWaitlistLength();
-            showMessage(messageDiv, `SUCCESS! You have been added to the list and are spot #${length}.`, 'success');
-            
-            document.getElementById('customer-name').value = '';
-            document.getElementById('customer-address').value = ''; // Clear address input
-            document.getElementById('customer-phone').value = '';
+    display.innerHTML = data.map((item, index) => `
+        <div class="waitlist-item">
+            <div class="waitlist-item-position">${index + 1}</div>
+            <div class="waitlist-item-info">
+                <div class="waitlist-item-name">${item.name}</div>
+                <div class="waitlist-item-phone">
+                    📞 ${item.phone} | 📍 ${item.address}<br>
+                    <small>ID: ${item.device_id}</small>
+                </div>
+            </div>
+            <button class="btn btn-delete-admin" onclick="adminDelete(${item.id})">Remove</button>
+        </div>
+    `).join('');
+}
 
-            updateWaitlistDisplay();
-            updateWaitlistForms();
-        }
+async function adminDelete(id) {
+    if (!confirm("Remove this customer?")) return;
+    await _supabase.from('waitlist').delete().eq('id', id);
+    refreshAdminWaitlist();
+}
 
-        async function attemptDeleteFromWaitlist() {
-            const messageDiv = document.getElementById('waitlist-message');
-            const reservationId = getReservationId(); 
+// Initialize
+window.onload = refreshWaitlist;
 
-            if (!reservationId) {
-                 showMessage(messageDiv, 'No active reservation found on this device to delete.', 'error');
-                 return;
-            }
+// --- Updated PIN Logic using Supabase ---
 
-            // 1. Fetch the user's name (for the success message) before deleting
-            const { data: entryData, error: fetchError } = await supabase
-                .from(WAITLIST_TABLE)
-                .select('name')
-                .eq('id', reservationId)
-                .limit(1);
+async function getSavedPin() {
+    const { data, error } = await _supabase
+        .from('app_config')
+        .select('value')
+        .eq('key', 'admin_pin')
+        .single();
+    
+    if (error) {
+        console.error("Error fetching PIN:", error);
+        return "COOLUP"; // Fallback
+    }
+    return data.value;
+}
 
-            if (fetchError || entryData.length === 0) {
-                 // The ID exists locally but not in the DB (admin may have deleted it).
-                 clearReservationId();
-                 showMessage(messageDiv, 'Your reservation was not found on the list (it may have been removed by an admin). Local tracking cleared. You may now add a new entry.', 'success');
-                 updateWaitlistForms();
-                 updateWaitlistDisplay();
-                 return;
-            }
+async function checkPin() {
+    const enteredPin = document.getElementById('admin-pin').value;
+    const savedPin = await getSavedPin();
 
-            const entryName = entryData[0].name;
+    if (enteredPin === savedPin) {
+        document.getElementById('admin-locked').style.display = 'none';
+        document.getElementById('admin-unlocked').style.display = 'block';
+        refreshAdminWaitlist();
+    } else {
+        alert("Incorrect PIN");
+    }
+}
 
-            // 2. Perform the deletion using the unique ID
-            const { error: deleteError, count } = await supabase
-                .from(WAITLIST_TABLE)
-                .delete()
-                .eq('id', reservationId)
-                .select('*', { count: 'exact' });
+async function changeAdminPin() {
+    const oldPin = document.getElementById('old-pin').value;
+    const newPin = document.getElementById('new-pin').value;
+    const savedPin = await getSavedPin();
+    const msgBox = document.getElementById('pin-change-message');
 
-            if (deleteError) {
-                console.error('Delete Error:', deleteError);
-                showMessage(messageDiv, 'Failed to remove entry: ' + deleteError.message, 'error');
-                return;
-            }
+    if (oldPin !== savedPin) {
+        alert("Current PIN is incorrect.");
+        return;
+    }
 
-            if (count > 0) {
-                // 3. Clear local storage after successful deletion
-                clearReservationId();
-                
-                showMessage(messageDiv, `${entryName}'s reservation has been successfully removed. You can now add a new entry.`, 'success');
-            } else {
-                showMessage(messageDiv, `Deletion failed. The entry may have already been removed by an administrator.`, 'error');
-            }
-            
-            updateWaitlistDisplay();
-            updateWaitlistForms();
-        }
+    if (newPin.length < 4) {
+        alert("New PIN must be at least 4 characters.");
+        return;
+    }
 
-        async function deleteAdminEntry(id, entryName) {
-            const messageDiv = document.getElementById('admin-message');
+    const { error } = await _supabase
+        .from('app_config')
+        .update({ value: newPin })
+        .eq('key', 'admin_pin');
 
-            // Admin deletion uses the ID.
-            const { error: deleteError, count } = await supabase
-                .from(WAITLIST_TABLE)
-                .delete()
-                .eq('id', id)
-                .select('*', { count: 'exact' });
+    if (error) {
+        alert("Failed to update PIN: " + error.message);
+    } else {
+        alert("PIN updated successfully in database!");
+        document.getElementById('old-pin').value = '';
+        document.getElementById('new-pin').value = '';
+    }
+}
 
-            if (deleteError) {
-                console.error('Delete Error:', deleteError);
-                showMessage(messageDiv, 'Failed to remove entry: ' + deleteError.message, 'error');
-                return;
-            }
+</script>
 
-            if (count > 0) {
-                 // If the admin deleted the reservation associated with the user's browser, clear local storage
-                if (getReservationId() == id) {
-                    clearReservationId();
-                    // Update user's forms if they are on the waitlist page
-                    updateWaitlistForms(); 
-                }
-
-                showMessage(messageDiv, `${entryName} (ID: ${id}) has been removed by Admin.`, 'success');
-            } else {
-                showMessage(messageDiv, `Admin deletion failed. Entry may not exist.`, 'error');
-            }
-           
-            updateWaitlistDisplay();
-            updateAdminWaitlistDisplay();
-        }
-
-        async function getWaitlistLength() {
-            const { count, error } = await supabase
-                .from(WAITLIST_TABLE)
-                .select('*', { count: 'exact', head: true });
-
-            return count;
-        }
-
-        async function updateWaitlistDisplay() {
-            const display = document.getElementById('waitlist-display');
-            display.innerHTML = '<div class="empty-list">Loading waitlist...</div>';
-            
-            // Fetch data, ordered by created_at (first in, first out)
-            const { data: waitlist, error } = await supabase
-                .from(WAITLIST_TABLE)
-                .select('*')
-                .order('created_at', { ascending: true });
-
-            if (error) {
-                console.error('Fetch Error:', error);
-                display.innerHTML = '<div class="empty-list message error">Error fetching waitlist: ' + error.message + '</div>';
-                return;
-            }
-            
-            if (waitlist.length === 0) {
-                display.innerHTML = '<div class="empty-list">No one is currently on the waiting list.</div>';
-                return;
-            }
-
-            let html = '';
-            const currentReservationId = getReservationId();
-
-            waitlist.forEach((entry, index) => {
-                // Obfuscating the display for privacy
-                const obfuscatedName = entry.name.length > 2 ? entry.name.charAt(0) + '***' + entry.name.slice(-1) : entry.name;
-                const isMyReservation = currentReservationId && currentReservationId == entry.id;
-                
-                // Obfuscate phone number for all public viewers
-                const phoneDisplay = entry.phone.length > 4 ? `📞 ***-***-${entry.phone.slice(-4)}` : entry.phone;
-                
-                // Highlight the user's spot if they have one active
-                const highlightStyle = isMyReservation ? 'border-left: 4px solid #e74c3c; background: #ffebeb;' : '';
-                const mySpotText = isMyReservation ? ' (YOUR SPOT)' : '';
-
-                html += `
-                    <div class="waitlist-item" style="${highlightStyle}">
-                        <div class="waitlist-item-position">${index + 1}</div>
-                        <div class="waitlist-item-info">
-                            <div class="waitlist-item-name">${obfuscatedName}</div>
-                            <div class="waitlist-item-phone">${phoneDisplay}${mySpotText}</div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            display.innerHTML = html;
-        }
-
-        function updateAdminDisplay() {
-            const lockedDiv = document.getElementById('admin-locked');
-            const unlockedDiv = document.getElementById('admin-unlocked');
-
-            if (isAdminLoggedIn) {
-                lockedDiv.style.display = 'none';
-                unlockedDiv.style.display = 'block';
-                updateAdminWaitlistDisplay();
-            } else {
-                lockedDiv.style.display = 'block';
-                unlockedDiv.style.display = 'none';
-            }
-        }
-
-        async function updateAdminWaitlistDisplay() {
-            const display = document.getElementById('admin-waitlist-display');
-            display.innerHTML = '<div class="empty-list">Loading admin list...</div>';
-            
-            // Fetch data, now including the address field
-            const { data: waitlist, error } = await supabase
-                .from(WAITLIST_TABLE)
-                .select('*')
-                .order('created_at', { ascending: true });
-
-            if (error) {
-                console.error('Admin Fetch Error:', error);
-                display.innerHTML = '<div class="empty-list message error">Error fetching admin waitlist: ' + error.message + '</div>';
-                return;
-            }
-            
-            if (waitlist.length === 0) {
-                display.innerHTML = '<div class="empty-list">No entries in the waiting list.</div>';
-                return;
-            }
-
-            let html = '';
-            waitlist.forEach((entry, index) => {
-                html += `
-                    <div class="waitlist-item">
-                        <div class="waitlist-item-position">${index + 1}</div>
-                        <div class="waitlist-item-info">
-                            <div class="waitlist-item-name">
-                                ${entry.name} 
-                                <span style="font-size: 14px; color: #764ba2;">(ID: ${entry.id})</span>
-                            </div>
-                            <div class="waitlist-item-phone" style="margin-bottom: 5px;">
-                                📍 <strong>Address:</strong> ${entry.address}
-                            </div>
-                            <div class="waitlist-item-phone">
-                                📞 ${entry.phone}
-                            </div>
-                        </div>
-                        <button class="btn btn-delete-admin" onclick="deleteAdminEntry(${entry.id}, '${entry.name}')">Complete/Remove</button>
-                    </div>
-                `;
-            });
-
-            display.innerHTML = html;
-        }
-
-        async function checkPin() {
-            const pin = document.getElementById('admin-pin').value;
-            const messageDiv = document.getElementById('admin-message');
-            const currentPin = await getAdminPin(); // Fetch PIN from DB
-
-            if (pin === currentPin) {
-                isAdminLoggedIn = true;
-                document.getElementById('admin-pin').value = '';
-                updateAdminDisplay();
-                showMessage(messageDiv, '', 'success');
-            } else {
-                showMessage(messageDiv, 'Incorrect PIN. Please try again.', 'error');
-            }
-        }
-
-        async function changeAdminPin() {
-            const oldPinInput = document.getElementById('old-pin').value;
-            const newPin = document.getElementById('new-pin').value;
-            const messageDiv = document.getElementById('pin-change-message');
-            const currentPin = await getAdminPin(); // Fetch current PIN from DB
-
-            if (!oldPinInput || !newPin) {
-                showMessage(messageDiv, 'Please fill in both the current PIN and the new PIN fields.', 'error');
-                return;
-            }
-
-            if (oldPinInput !== currentPin) {
-                showMessage(messageDiv, 'The Current PIN you entered is incorrect.', 'error');
-                return;
-            }
-
-            if (newPin.length < 4) {
-                 showMessage(messageDiv, 'The New PIN must be at least 4 characters long.', 'error');
-                 return;
-            }
-
-            if (newPin === oldPinInput) {
-                 showMessage(messageDiv, 'The New PIN cannot be the same as the current PIN.', 'error');
-                 return;
-            }
-
-            // Success: Update the PIN in the database
-            const success = await setAdminPin(newPin);
-            
-            if (success) {
-                // Clear inputs and log the admin out for security
-                document.getElementById('old-pin').value = '';
-                document.getElementById('new-pin').value = '';
-                isAdminLoggedIn = false;
-                
-                showMessage(messageDiv, 'Admin PIN successfully updated and saved globally! Please log in again with the new PIN.', 'success', 10000);
-                
-                // Revert Admin panel to locked state
-                updateAdminDisplay(); 
-            } else {
-                 showMessage(messageDiv, 'PIN update failed due to a database error. Check your RLS policy.', 'error', 10000);
-            }
-        }
-
-        function showMessage(element, message, type, duration = 5000) {
-            if (!message) {
-                element.innerHTML = '';
-                return;
-            }
-
-            element.innerHTML = `<div class="message ${type}">${message}</div>`;
-            
-            setTimeout(() => {
-                element.innerHTML = '';
-            }, duration);
-        }
-
-        // Event listener for PIN input and initial UI update
-        document.addEventListener('DOMContentLoaded', function() {
-            const pinInput = document.getElementById('admin-pin');
-            if (pinInput) {
-                pinInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        checkPin();
-                    }
-                });
-            }
-            // Initial call to set form states correctly
-            updateWaitlistForms();
-        });
-    </script>
 </body>
 </html>
 
